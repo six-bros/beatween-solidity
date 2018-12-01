@@ -29,6 +29,12 @@ contract Mixtape {
         address(producer).transfer(msg.value/2);
         address(rapper[rapperIndex]).transfer(msg.value/2);
     }
+    
+    function clap(address add) public {
+        require(numOfClap[add] < 50);
+        numOfClap[add]++;
+        totalClap++;
+    }
 }
 
 contract User {
@@ -55,5 +61,9 @@ contract User {
         require(msg.value != 0);
         mixtape.call(abi.encodeWithSignature("saveTip(uint256)", msg.value));
         mixtape.call(abi.encodeWithSignature("donation(uint256)", rapperIndex));
+    }
+    
+    function clap(address mixtape) public {
+        mixtape.call(abi.encodeWithSignature("clap(address)", msg.sender));
     }
 }
