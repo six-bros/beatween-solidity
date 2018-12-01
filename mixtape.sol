@@ -5,18 +5,22 @@ import './user.sol';
 
 contract Mixtape {
     address payable producer;
-    address payable rapper;
+    address payable[] rapper;
 
     uint public totalBalance;
+	uint clpaNum;
     
     mapping(address => uint) public clapped;
     
-    constructor (address payable _producer, address payable _rapper) public {
+    constructor (address payable _producer) public {
         producer = _producer;
-        rapper = _rapper;
-        clapNum = 0;
-        downloadNum = 0;
+		clapNum = 0;
+		totalBalance = 0;
     }
+
+	function beRapper() public {		
+		rapper.push(msg.sender);
+	}
 
     function giveClap() public {
         require(clapped[msg.sender] < 50);
