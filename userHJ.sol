@@ -1,50 +1,59 @@
 pragma solidity >=0.4.25 <0.6.0;
 
+contract Mixtape {
+    address payable producer;
+    address payable[] rapper;
+
+    uint public totalTip;
+    uint public totalClap;
+    uint public totalPlay;
+
+    mapping(address => uint) numOfClap;
+    
+    constructor(address payable _producer) public{
+        producer = _producer;
+        totalTip = 0;
+        totalClap = 0;
+        totalPlay = 0;
+    }
+    
+    function registerRap(address payable _rapper) public {
+        rapper.push(_rapper);
+    }
+    
+    function saveTip(uint tip) public {
+        totalTip += tip;
+    }
+    
+    function donation(uint rapperIndex) public payable {
+        address(producer).transfer(msg.value/2);
+        address(rapper[rapperIndex]).transfer(msg.value/2);
+    }
+}
+
 contract User {
 
-    struct Mixtape {
-        address payable producer;
-        address payable[] rapper;
-
-        uint totalTip;
-        uint totalClap;
-        uint totalPlay;
-
-        mapping(address => uint) numOfClap;
-    }
-
     address public user;
-    address[] public beats;
-    address[] public raps;
+    address[] public mixtapes;
+    
 
-    construct() public {
+    constructor() public {
         user = msg.sender;
     }
 
-    function getBeatsCount () public returns(uint beatsCount) {
-        return beats.length;
-    }
-
-    function getRapsCount () public returns(uint rapsCount) {
-        return raps.length;
-    }
-
     function registerBeat() public {
-        Mixtape newMixtape = Mixtape(producer = msg.sender,
-        totalTip = 0, totalClap = 0, totalPlay = 0);
-
-        beats.push(newMixtape);
-        return newMixtape;
+        Mixtape newMixtape = new Mixtape(msg.sender);
+        mixtapes.push(address(newMixtape));
+        
     }
 
     function registerRap(address mixtape) public {
-        mixtape.rapper.push(msg.sender);
+        mixtape.call(abi.encodeWithSignature("registerRap(address payable", msg.sender));
     }
 
     function donation(address mixtape, uint rapperIndex) public payable{
         require(msg.value != 0);
-        mixtape.totalTip += msg.value;
-        address(mixtape.producer). transfer(msg.value/2);
-        address(mixtape.rapper[rapperIndex]).transfer(msg.value/2);
+        mixtape.call(abi.encodeWithSignature("saveTip(uint256)", msg.value));
+        mixtape.call(abi.encodeWithSignature("donation(uint256)", rapperIndex));
     }
 }
