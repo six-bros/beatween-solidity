@@ -35,6 +35,10 @@ contract Mixtape {
         numOfClap[add]++;
         totalClap++;
     }
+    
+    function play() public {
+        totalPlay++;
+    }
 }
 
 contract User {
@@ -65,5 +69,9 @@ contract User {
     
     function clap(address mixtape) public {
         mixtape.call(abi.encodeWithSignature("clap(address)", msg.sender));
+    }
+    
+    function play(address mixtape) public {
+        mixtape.call(abi.encodeWithSignature("play()"));
     }
 }
