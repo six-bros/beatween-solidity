@@ -1,6 +1,6 @@
 pragma solidity >=0.4.25 <0.6.0;
 
-import '/ERC721/ERC721.sol'
+import './openZeppelin/ERC721/ERC721.sol';
 import './user.sol';
 
 pragma solidity >=0.4.25 <0.6.0;
