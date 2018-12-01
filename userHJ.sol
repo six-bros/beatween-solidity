@@ -2,58 +2,60 @@ pragma solidity >=0.4.25 <0.6.0;
 
 contract Mixtape {
   address public producer;
-  address [] public rapper;
+  address[] public rappers;
 
   uint public totalTip;
   uint public totalClap;
   uint public totalPlay;
-
+  string public uid;
+  
+  mapping(address => string) uidMap;
   mapping(address => uint) numOfClap;
   mapping(address => uint) multiSign;
-  mapping(address => bool) isRapper;
+  
 
-  constructor(address _producer) public{
+  constructor(address _producer, string _uid) public{
       producer = _producer;
       totalTip = 0;
       totalClap = 0;
       totalPlay = 0;
+      uid = _uid;
+  }
+  
+  function getBalance() public returns(uint){
+      return address(this).balance;
   }
 
-  function registerRap(address _rapper, string memory uid) public {
-      require(isRapper[_rapper] != true);
-      rapper.push(_rapper);
-      isRapper[_rapper] = true;
+  function _registerRapping(address _rapper) public {
+      rappers.push(_rapper);
       multiSign[_rapper] = uint256(keccak256(abi.encodePacked(_rapper, producer, uid)));
   }
 
-  function saveTip(uint tip) public {
+  function _saveTip(uint tip) public {
       totalTip += tip;
   }
 
-  function donation(uint rapperIndex) public payable {
+  function _donation(uint rapperIndex) public payable {
       address(producer).transfer(msg.value/2);
-      address(rapper[rapperIndex]).transfer(msg.value/2);
+      address(rappers[rapperIndex]).transfer(msg.value/2);
   }
 
-  function clap(address add) public {
+  function _clap(address add) public {
       require(numOfClap[add] < 50);
       numOfClap[add]++;
       totalClap++;
   }
 
-  function play() public {
+  function _play() public {
       totalPlay++;
   }
 
-  function distribute(address _producer, address _rapper, string memory uid) public {
+  function _distribute(address _producer, address _rapper, string uid) public {
       require( uint256(keccak256(abi.encodePacked(_rapper, producer, uid))) == multiSign[_rapper]);
       uint money = address(this).balance;
       address(_producer).transfer(money/2);
       address(_rapper).transfer(money/2);
   }
-
-
-
 }
 
 contract User {
@@ -62,37 +64,35 @@ contract User {
   address[] public mixtapes;
   string public uid;
 
-
   constructor(string memory _uid) public {
       user = msg.sender;
       uid = _uid;
   }
 
   function registerBeat() public {
-      Mixtape newMixtape = new Mixtape(msg.sender);
+      Mixtape newMixtape = new Mixtape(msg.sender, uid);
       mixtapes.push(address(newMixtape));
-
   }
 
-  function registerRap(address mixtape, string memory uid) public {
-      mixtape.call(abi.encodeWithSignature("registerRap(address, string memory)", msg.sender, uid));
+  function registerRap(address mixtape) public {
+      mixtape.call(abi.encodeWithSignature("_registerRapping(address)", msg.sender));
   }
 
   function donation(address mixtape, uint rapperIndex) public payable{
       require(msg.value != 0);
-      mixtape.call(abi.encodeWithSignature("saveTip(uint256)", msg.value));
-      mixtape.call(abi.encodeWithSignature("donation(uint256)", rapperIndex));
+      mixtape.call(abi.encodeWithSignature("_saveTip(uint256)", msg.value));
+      mixtape.call(abi.encodeWithSignature("_donation(uint256)", rapperIndex));
   }
 
   function clap(address mixtape) public {
-      mixtape.call(abi.encodeWithSignature("clap(address)", msg.sender));
+      mixtape.call(abi.encodeWithSignature("_clap(address)", msg.sender));
   }
 
   function play(address mixtape) public {
-      mixtape.call(abi.encodeWithSignature("play()"));
+      mixtape.call(abi.encodeWithSignature("_play()"));
   }
 
   function distribute(address mixtape, address _producer, address _rapper, string _uid) public {
-      mixtape.call(abi.encodeWithSignature("distribute(address, address, uint256)", _producer, _rapper, _uid));
+      mixtape.call(abi.encodeWithSignature("_distribute(address, address, string)", _producer, _rapper, _uid));
   }
 }
