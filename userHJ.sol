@@ -1,4 +1,4 @@
-pragma solidity >=0.4.25 <0.6.0;
+pragma solidity ^0.4.25;
 
 contract Mixtape {
     address public producer;
@@ -22,7 +22,7 @@ contract Mixtape {
         uid = _uid;
     }
     
-    function getBalance() public returns(uint){
+    function getBalance() public view returns(uint){
         return address(this).balance;
     }
   
@@ -50,8 +50,8 @@ contract Mixtape {
         totalPlay++;
     }
   
-    function _distribute(address _producer, address _rapper, string memory uid) public {
-        require(uint256(keccak256(abi.encodePacked(_rapper, producer, uid))) == multiSign[_rapper]);
+    function _distribute(address _producer, address _rapper, string _uid) public {
+        require(uint256(keccak256(abi.encodePacked(_rapper, producer, _uid))) == multiSign[_rapper]);
         uint money = address(this).balance;
         address(_producer).transfer(money/2);
         address(_rapper).transfer(money/2);
